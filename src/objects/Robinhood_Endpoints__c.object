@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customSettingsType>List</customSettingsType>
+    <description>stores the different endpoints for the robinhood api</description>
+    <enableFeeds>false</enableFeeds>
+    <fields>
+        <fullName>URL__c</fullName>
+        <caseSensitive>true</caseSensitive>
+        <description>holds the url for the endpoint</description>
+        <encrypted>false</encrypted>
+        <externalId>false</externalId>
+        <label>URL</label>
+        <length>255</length>
+        <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>true</unique>
+    </fields>
+    <label>Robinhood Endpoints</label>
+    <visibility>Protected</visibility>
+</CustomObject>

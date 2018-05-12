@@ -1,0 +1,43 @@
+<project name="RobinhoodAPI" basedir="." xmlns:sf="antlib:com.salesforce">
+	<property name="sf.serverurl" value="https://login.salesforce.com"/>
+	<property name="sf.maxPoll" value="80"/>
+
+	<!-- Get pulls the project from any test environment -->
+	<target name="get" depends="authenticate">
+		<sf:retrieve username="${sf.username}" password="${sf.password}" serverurl="${sf.serverurl}" maxPoll="${sf.maxPoll}" retrieveTarget="src" unpackaged="src/package.xml"/>
+	</target>
+
+	<!-- Deploy deploys the project without running any tests to test instances -->
+	<target name="deploy" depends="authenticate">
+		<sf:deploy username="${sf.username}" password="${sf.password}" serverurl="${sf.serverurl}" maxPoll="${sf.maxPoll}" deployRoot="src/" rollbackOnError="true" testLevel="NoTestRun"/>
+	</target>
+	
+	<!-- Test tests the deployment by running all local tests. It does not deploy the project -->
+	<target name="test" depends="authenticate">
+		<sf:deploy username="${sf.username}" password="${sf.password}" serverurl="${sf.serverurl}" maxPoll="${sf.maxPoll}" deployRoot="src/" checkOnly="true" testLevel="RunLocalTests"/>
+	</target>
+
+	<!-- Test tests the deployment by running all local tests. It does not deploy the project -->
+	<target name="compile" depends="authenticate">
+		<sf:deploy username="${sf.username}" password="${sf.password}" serverurl="${sf.serverurl}" maxPoll="${sf.maxPoll}" deployRoot="src/" checkOnly="true" testLevel="NoTestRun"/>
+	</target>
+
+	<!-- Clean deletes the project contents but keeps the package.xml file. -->
+	<target name="clean">
+		<move file="src/package.xml" tofile="package.xml" />
+		<delete dir="src"/>
+		<mkdir dir="src"/>
+		<move file="package.xml" tofile="src/package.xml" />
+	</target>
+
+	<!-- Authenticate prompts the user for the Salesforce username and password. -->
+	<target name="authenticate">
+		<input message="Username:" addproperty="sf.username">
+			<handler type="default" />
+		</input>
+
+		<input message="Password: " addproperty="sf.password">
+			<handler type="secure" />
+		</input>
+	</target>
+</project>
