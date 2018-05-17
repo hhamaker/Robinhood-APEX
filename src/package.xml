@@ -8,6 +8,8 @@
     <types>
         <members>Robinhood_Credentials__c</members>
         <members>Robinhood_Endpoints__c</members>
+        <members>Stock_History__c</members>
+        <members>Stock__c</members>
         <name>CustomObject</name>
     </types>
     <types>
