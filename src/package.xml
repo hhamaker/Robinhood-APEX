@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
+        <members>MarketHoursScheduler</members>
         <members>RobinhoodAccount</members>
         <members>RobinhoodHelper</members>
+        <members>StockHistoryBatch</members>
         <name>ApexClass</name>
     </types>
     <types>
+        <members>OpenTradingHours__c</members>
         <members>Robinhood_Credentials__c</members>
         <members>Robinhood_Endpoints__c</members>
         <members>Stock_History__c</members>
