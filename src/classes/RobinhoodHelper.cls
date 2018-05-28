@@ -135,6 +135,19 @@ public with sharing class RobinhoodHelper {
         return stockHistory;
     }
 
+    /******************* Orders Section ********************/
+    public static HttpResponse placeOrder(String symbol, String type, String time_in_force, String triggerString, Decimal price, 
+        Boolean override_day_trade_checks){
+        String endpoint = [SELECT Name, URL__c FROM Robinhood_Endpoints__c WHERE Name = 'PlaceOrder' LIMIT 1].URL__c;
+        HttpRequest request = makeRequest('POST', endpoint);
+        //this is where you build and set the body of the request
+        //make sure to include the account (From the login), and the instrument (From the stock)
+        String body = '';
+        request.setBody(body);
+        HttpResponse httpResponse = makeCallout(request);
+        return httpResponse;
+    }
+
     /******************* Generic Section ********************/
     public static HttpRequest makeRequest(String call, String endpoint){
         HttpRequest request = new HttpRequest();
