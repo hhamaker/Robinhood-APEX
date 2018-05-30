@@ -1,4 +1,4 @@
-public class StockHistoryBatch implements Database.Batchable<sObject>, Database.Stateful, Schedulable {
+public class StockHistoryBatch implements Database.Batchable<sObject>, Database.Stateful, Schedulable, Database.AllowsCallouts {
     private String query;
     private String endpoint;
     private List<Stock_History__c> stockHistoryList = new List<Stock_History__c>();
@@ -20,7 +20,7 @@ public class StockHistoryBatch implements Database.Batchable<sObject>, Database.
 
         //inserts stock histories
         if (!stockHistoryList.isEmpty()){
-            Database.Insert(stockHistoryList, false);
+            Insert(stockHistoryList);
         }
 	}
 	
