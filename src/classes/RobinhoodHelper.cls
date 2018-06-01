@@ -33,11 +33,11 @@ public with sharing class RobinhoodHelper {
         return response.token;
     }
 
-    /******************* Market Time Section ********************/
+    /******************* Market Section ********************/
     public static HttpResponse getMarketTime(){
         DateTime now = DateTime.now();
         //hard coding the endpoint now because we are only using the NYSE
-        String endpoint = 'https://api.robinhood.com/markets/XASE/hours/' + now.year() + '-' + now.Month() + '-' + '29' + '/';
+        String endpoint = 'https://api.robinhood.com/markets/XASE/hours/' + now.year() + '-' + now.Month() + '-' + now.Day() + '/';
         HttpRequest request = makeRequest('GET', endpoint);
         HttpResponse httpResponse = makeCallout(request);
         return httpResponse;
@@ -47,6 +47,27 @@ public with sharing class RobinhoodHelper {
         MarketTime mTime = (MarketTime) JSON.deserialize(response.getBody(), MarketTime.class);
         return mTime;
     }
+
+    public static Boolean isMarketOpen(){
+        DateTime now = DateTime.now();
+        String endpoint = 'https://api.robinhood.com/markets/XASE/hours/' + now.year() + '-' + now.Month() + '-' + now.Day() + '/';
+        HttpRequest request = makeRequest('GET', endpoint);
+        HttpResponse httpResponse = makeCallout(request);
+
+        MarketTime mt = makeMarketTime(httpResponse);
+        
+        System.debug('now - ' + now);
+        System.debug('opensAt - ' + mt.opens_at);
+        System.debug('closes_at - ' + mt.closes_at);
+        //check to see if the current hours and minutes is within the opens_at and closes_at times
+
+        if (now >= mt.opens_at && now < mt.closes_at){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
     /******************* Quote Section ********************/
     public static HttpResponse getQuote(String stockName){
@@ -197,8 +218,9 @@ public with sharing class RobinhoodHelper {
         public String instrument;
     }
 
+
     public class MarketTime {
-        public String closes_at;
-        public String opens_at;
+        public DateTime closes_at;
+        public DateTime opens_at;
     }
 }
