@@ -4,8 +4,8 @@
         <members>MarketHoursScheduler</members>
         <members>RobinhoodAccount</members>
         <members>RobinhoodHelper</members>
-        <members>StockHistoryBatch</members>
         <members>RobinhoodUtils</members>
+        <members>StockHistoryBatch</members>
         <name>ApexClass</name>
     </types>
     <types>
