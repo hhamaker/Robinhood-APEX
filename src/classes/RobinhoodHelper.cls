@@ -1,7 +1,6 @@
 public with sharing class RobinhoodHelper {
-    
     /******************* Login Section ********************/
-    public static HttpRequest makeLoginRequest(String call, String endpoint, LoginRequest loginRequest){
+    public HttpRequest makeLoginRequest(String call, String endpoint, LoginRequest loginRequest){
         HttpRequest request = new HttpRequest();
         request.setHeader('Content-Type', 'application/json');
         request.setHeader('Accept', 'application/json');
@@ -12,7 +11,7 @@ public with sharing class RobinhoodHelper {
         return request;
     }
 
-    public static String login(String username) {
+    public String login(String username) {
         System.debug('we are in the login method');
         String endpoint = [SELECT Name, URL__c FROM Robinhood_Endpoints__c WHERE Name = 'Auth Token' LIMIT 1].URL__c;
         System.debug('we have the endpoint - ' + endpoint);
@@ -34,7 +33,7 @@ public with sharing class RobinhoodHelper {
     }
 
     /******************* Market Section ********************/
-    public static HttpResponse getMarketTime(){
+    public HttpResponse getMarketTime(){
         DateTime now = DateTime.now();
         //hard coding the endpoint now because we are only using the NYSE
         String endpoint = 'https://api.robinhood.com/markets/XASE/hours/' + now.year() + '-' + now.Month() + '-' + now.Day() + '/';
@@ -43,24 +42,23 @@ public with sharing class RobinhoodHelper {
         return httpResponse;
     }
 
-    public static MarketTime makeMarketTime (HttpResponse response){
+    public MarketTime makeMarketTime (HttpResponse response){
         MarketTime mTime = (MarketTime) JSON.deserialize(response.getBody(), MarketTime.class);
         return mTime;
     }
 
-    public static Boolean isMarketOpen(){
+    public Boolean isMarketOpen(){
         DateTime now = DateTime.now();
         String endpoint = 'https://api.robinhood.com/markets/XASE/hours/' + now.year() + '-' + now.Month() + '-' + now.Day() + '/';
         HttpRequest request = makeRequest('GET', endpoint);
         HttpResponse httpResponse = makeCallout(request);
 
         MarketTime mt = makeMarketTime(httpResponse);
-        
         System.debug('now - ' + now);
         System.debug('opensAt - ' + mt.opens_at);
         System.debug('closes_at - ' + mt.closes_at);
-        //check to see if the current hours and minutes is within the opens_at and closes_at times
 
+        //check to see if the current hours and minutes is within the opens_at and closes_at times
         if (now >= mt.opens_at && now < mt.closes_at){
             return true;
         } else {
@@ -68,28 +66,27 @@ public with sharing class RobinhoodHelper {
         }
     }
 
-
     /******************* Quote Section ********************/
-    public static HttpResponse getQuote(String stockName){
+    public HttpResponse getQuote(String stockName){
         String endpoint = [SELECT Name, URL__c FROM Robinhood_Endpoints__c WHERE Name = 'Get Quote' LIMIT 1].URL__c + stockname + '/';
         HttpRequest request = makeRequest('GET', endpoint);
         HttpResponse httpResponse = makeCallout(request);
         return httpResponse;
     }
 
-    public static HttpResponse getQuote(String stockName, String endpoint){
+    public HttpResponse getQuote(String stockName, String endpoint){
         String endpoint2 = endpoint + stockname + '/';
         HttpRequest request = makeRequest('GET', endpoint2);
         HttpResponse httpResponse = makeCallout(request);
         return httpResponse;
     }
 
-    public static QuoteResponse makeQuoteResponse(HttpResponse response){
+    public QuoteResponse makeQuoteResponse(HttpResponse response){
         QuoteResponse quote = (QuoteResponse) JSON.deserialize(response.getBody(), QuoteResponse.class);
         return quote;
     }
 
-    public static Stock_History__c makeStockHistory(QuoteResponse quote){
+    public Stock_History__c makeStockHistory(QuoteResponse quote){
         Stock__c stock = [SELECT Id, Name FROM Stock__c WHERE Name = :quote.symbol LIMIT 1];
 
         Stock_History__c stockHistory = new Stock_History__c(Stock__c = stock.Id);            
@@ -123,8 +120,7 @@ public with sharing class RobinhoodHelper {
         return stockHistory;
     }
 
-    public static Stock_History__c makeStockHistory(QuoteResponse quote, Id stockId){
-        
+    public Stock_History__c makeStockHistory(QuoteResponse quote, Id stockId){
         Stock_History__c stockHistory = new Stock_History__c(Stock__c = stockId);            
         if (!String.isBlank(quote.ask_price)){
             stockHistory.AskPrice__c = Decimal.ValueOf(quote.ask_price);
@@ -157,7 +153,7 @@ public with sharing class RobinhoodHelper {
     }
 
     /******************* Orders Section ********************/
-    public static HttpResponse placeOrder(String symbol, String type, String time_in_force, String triggerString, Decimal price, 
+    public HttpResponse placeOrder(String symbol, String type, String time_in_force, String triggerString, Decimal price, 
         Boolean override_day_trade_checks){
         String endpoint = [SELECT Name, URL__c FROM Robinhood_Endpoints__c WHERE Name = 'PlaceOrder' LIMIT 1].URL__c;
         HttpRequest request = makeRequest('POST', endpoint);
@@ -169,8 +165,19 @@ public with sharing class RobinhoodHelper {
         return httpResponse;
     }
 
+    public HttpResponse placeOrder(String symbol, String type, String time_in_force, String triggerString, Decimal price, 
+        Boolean override_day_trade_checks, String endpoint){
+        HttpRequest request = makeRequest('POST', endpoint);
+        //this is where you build and set the body of the request
+        //make sure to include the account (From the login), and the instrument (From the stock)
+        String body = '';
+        request.setBody(body);
+        HttpResponse httpResponse = makeCallout(request);
+        return httpResponse;
+    }
+
     /******************* Generic Section ********************/
-    public static HttpRequest makeRequest(String call, String endpoint){
+    public HttpRequest makeRequest(String call, String endpoint){
         HttpRequest request = new HttpRequest();
         request.setHeader('Content-Type', 'application/json');
         request.setHeader('Accept', 'application/json');
@@ -181,7 +188,7 @@ public with sharing class RobinhoodHelper {
         return request;
     }
 
-    public static HttpResponse makeCallout(HttpRequest request){
+    public HttpResponse makeCallout(HttpRequest request){
         Http http = new Http();
         HttpResponse httpResponse = http.send(request);
         System.debug(httpResponse);
@@ -217,7 +224,6 @@ public with sharing class RobinhoodHelper {
         public String updated_at;
         public String instrument;
     }
-
 
     public class MarketTime {
         public DateTime closes_at;

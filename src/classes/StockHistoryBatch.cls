@@ -10,13 +10,14 @@ public class StockHistoryBatch implements Database.Batchable<sObject>, Database.
 	}
 
    	public void execute(Database.BatchableContext BC, List<Stock__c> scope) {
-        Boolean isOpen = RobinhoodHelper.isMarketOpen();
+        RobinhoodHelper rh = new RobinhoodHelper();
+        Boolean isOpen = rh.isMarketOpen();
         //iterates through the stocks and creates the stock histories
         for(Stock__c stock : scope){
             if (isOpen){
-                HttpResponse response = RobinhoodHelper.getQuote(stock.Name, endpoint);
-                RobinhoodHelper.QuoteResponse quote = RobinhoodHelper.makeQuoteResponse(response);
-                Stock_History__c stockHistory = RobinhoodHelper.makeStockHistory(quote, stock.Id);
+                HttpResponse response = rh.getQuote(stock.Name, endpoint);
+                RobinhoodHelper.QuoteResponse quote = rh.makeQuoteResponse(response);
+                Stock_History__c stockHistory = rh.makeStockHistory(quote, stock.Id);
                 stockHistoryList.add(stockHistory);
             }
         }
