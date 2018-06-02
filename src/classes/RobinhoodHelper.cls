@@ -1,5 +1,4 @@
 public with sharing class RobinhoodHelper {
-    
     /******************* Login Section ********************/
     public HttpRequest makeLoginRequest(String call, String endpoint, LoginRequest loginRequest){
         HttpRequest request = new HttpRequest();
@@ -11,7 +10,6 @@ public with sharing class RobinhoodHelper {
         System.debug(request);
         return request;
     }
-
 
     public String login(String username) {
         System.debug('we are in the login method');
@@ -56,19 +54,17 @@ public with sharing class RobinhoodHelper {
         HttpResponse httpResponse = makeCallout(request);
 
         MarketTime mt = makeMarketTime(httpResponse);
-        
         System.debug('now - ' + now);
         System.debug('opensAt - ' + mt.opens_at);
         System.debug('closes_at - ' + mt.closes_at);
-        //check to see if the current hours and minutes is within the opens_at and closes_at times
 
+        //check to see if the current hours and minutes is within the opens_at and closes_at times
         if (now >= mt.opens_at && now < mt.closes_at){
             return true;
         } else {
             return false;
         }
     }
-
 
     /******************* Quote Section ********************/
     public HttpResponse getQuote(String stockName){
@@ -125,7 +121,6 @@ public with sharing class RobinhoodHelper {
     }
 
     public Stock_History__c makeStockHistory(QuoteResponse quote, Id stockId){
-        
         Stock_History__c stockHistory = new Stock_History__c(Stock__c = stockId);            
         if (!String.isBlank(quote.ask_price)){
             stockHistory.AskPrice__c = Decimal.ValueOf(quote.ask_price);
@@ -161,6 +156,17 @@ public with sharing class RobinhoodHelper {
     public HttpResponse placeOrder(String symbol, String type, String time_in_force, String triggerString, Decimal price, 
         Boolean override_day_trade_checks){
         String endpoint = [SELECT Name, URL__c FROM Robinhood_Endpoints__c WHERE Name = 'PlaceOrder' LIMIT 1].URL__c;
+        HttpRequest request = makeRequest('POST', endpoint);
+        //this is where you build and set the body of the request
+        //make sure to include the account (From the login), and the instrument (From the stock)
+        String body = '';
+        request.setBody(body);
+        HttpResponse httpResponse = makeCallout(request);
+        return httpResponse;
+    }
+
+    public HttpResponse placeOrder(String symbol, String type, String time_in_force, String triggerString, Decimal price, 
+        Boolean override_day_trade_checks, String endpoint){
         HttpRequest request = makeRequest('POST', endpoint);
         //this is where you build and set the body of the request
         //make sure to include the account (From the login), and the instrument (From the stock)
@@ -218,7 +224,6 @@ public with sharing class RobinhoodHelper {
         public String updated_at;
         public String instrument;
     }
-
 
     public class MarketTime {
         public DateTime closes_at;
