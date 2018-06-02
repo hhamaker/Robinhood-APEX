@@ -1,4 +1,5 @@
 public with sharing class RobinhoodHelper {
+
     /******************* Login Section ********************/
     public HttpRequest makeLoginRequest(String call, String endpoint, LoginRequest loginRequest){
         HttpRequest request = new HttpRequest();
@@ -31,6 +32,7 @@ public with sharing class RobinhoodHelper {
         
         return response.token;
     }
+
 
     /******************* Market Section ********************/
     public HttpResponse getMarketTime(){
@@ -74,9 +76,9 @@ public with sharing class RobinhoodHelper {
         return httpResponse;
     }
 
-    public HttpResponse getQuote(String stockName, String endpoint){
-        String endpoint2 = endpoint + stockname + '/';
-        HttpRequest request = makeRequest('GET', endpoint2);
+    public HttpResponse getQuote(String stockName, String endpointString){
+        String endpoint = endpointString + stockname + '/';
+        HttpRequest request = makeRequest('GET', endpoint);
         HttpResponse httpResponse = makeCallout(request);
         return httpResponse;
     }
@@ -88,8 +90,8 @@ public with sharing class RobinhoodHelper {
 
     public Stock_History__c makeStockHistory(QuoteResponse quote){
         Stock__c stock = [SELECT Id, Name FROM Stock__c WHERE Name = :quote.symbol LIMIT 1];
-
         Stock_History__c stockHistory = new Stock_History__c(Stock__c = stock.Id);            
+
         if (!String.isBlank(quote.ask_price)){
             stockHistory.AskPrice__c = Decimal.ValueOf(quote.ask_price);
         }
@@ -146,34 +148,53 @@ public with sharing class RobinhoodHelper {
         if (!String.isBlank(quote.adjusted_previous_close)){
             stockHistory.AdjustedPreviousClose__c = Decimal.ValueOf(quote.adjusted_previous_close);
         }
-        
-        stockHistory.PreviousCloseDate__c = Date.ValueOf(quote.previous_close_date);
-        
+        if (!String.isBlank(quote.previous_close_date)){
+            stockHistory.PreviousCloseDate__c = Date.ValueOf(quote.previous_close_date);
+        }
         return stockHistory;
     }
 
     /******************* Orders Section ********************/
-    public HttpResponse placeOrder(String symbol, String type, String time_in_force, String triggerString, Decimal price, 
-        Boolean override_day_trade_checks){
+    public HttpResponse placeOrder(OrderRequest order){
         String endpoint = [SELECT Name, URL__c FROM Robinhood_Endpoints__c WHERE Name = 'PlaceOrder' LIMIT 1].URL__c;
         HttpRequest request = makeRequest('POST', endpoint);
-        //this is where you build and set the body of the request
-        //make sure to include the account (From the login), and the instrument (From the stock)
-        String body = '';
-        request.setBody(body);
+        request.setBody(JSON.serialize(order).replace('ztrigger', 'trigger'));
         HttpResponse httpResponse = makeCallout(request);
         return httpResponse;
     }
 
-    public HttpResponse placeOrder(String symbol, String type, String time_in_force, String triggerString, Decimal price, 
-        Boolean override_day_trade_checks, String endpoint){
+    public HttpResponse placeOrder(OrderRequest order, String endpoint){
         HttpRequest request = makeRequest('POST', endpoint);
-        //this is where you build and set the body of the request
-        //make sure to include the account (From the login), and the instrument (From the stock)
-        String body = '';
-        request.setBody(body);
+        request.setBody(JSON.serialize(order).replace('ztrigger', 'trigger'));
         HttpResponse httpResponse = makeCallout(request);
         return httpResponse;
+    }
+
+    public OrderRequest CreateOrderRequest(String ztrigger, String symbol, String type, String time_in_force, 
+        String price, String quantity, String side){
+
+        //make the account call
+        RobinhoodAccount ra = new RobinhoodAccount();
+        RobinhoodAccount.AccountResponse accountResponse = ra.getAccount();
+        
+        //make the quote call
+        HttpResponse response = getQuote(symbol);
+        QuoteResponse quote = makeQuoteResponse(response);
+        
+        //make the order request
+        OrderRequest order = new OrderRequest();
+        order.extended_hours = 'true';
+        order.price = price;
+        order.account = accountResponse.results.get(0).url;
+        order.instrument = quote.instrument;
+        order.symbol = symbol;
+        order.type = type;
+        order.time_in_force = time_in_force;
+        order.ztrigger = ztrigger;
+        order.quantity = quantity;
+        order.side = side;
+        order.override_day_trade_checks = 'true';
+        return order;
     }
 
     /******************* Generic Section ********************/
@@ -228,5 +249,20 @@ public with sharing class RobinhoodHelper {
     public class MarketTime {
         public DateTime closes_at;
         public DateTime opens_at;
+    }
+    
+    public class OrderRequest {
+        public String account;
+        public String instrument;
+        public String symbol;
+        public String type;
+        public String time_in_force;
+        public String ztrigger;
+        public String price;
+        public String quantity;
+        public String side;
+        public String client_id;
+        public String extended_hours;
+        public String override_day_trade_checks;
     }
 }
