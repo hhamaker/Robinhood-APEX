@@ -5,6 +5,7 @@
         <members>RobinhoodAccount</members>
         <members>RobinhoodHelper</members>
         <members>StockHistoryBatch</members>
+        <members>RobinhoodUtils</members>
         <name>ApexClass</name>
     </types>
     <types>
