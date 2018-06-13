@@ -6,6 +6,7 @@
         <members>RobinhoodHelper</members>
         <members>RobinhoodUtils</members>
         <members>StockHistoryBatch</members>
+        <members>removeStockHistoryBatch</members>
         <name>ApexClass</name>
     </types>
     <types>
